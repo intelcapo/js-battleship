@@ -1,0 +1,24 @@
+{
+  "name": "js-battleship",
+  "version": "1.0.0",
+  "description": "this is my first video Game usind HTML , CSS and JS",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/intelcapo/js-battleship.git"
+  },
+  "keywords": [
+    "JS",
+    "HTML",
+    "CSS"
+  ],
+  "author": "Intelcapo",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/intelcapo/js-battleship/issues"
+  },
+  "homepage": "https://github.com/intelcapo/js-battleship#readme"
+}

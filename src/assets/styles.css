@@ -1,0 +1,38 @@
+section {
+    margin-top: 20px;
+}
+
+th, td {
+    width: 20px;
+    height: 20px;
+    border: solid 1px gray;
+}
+
+label {
+    cursor: pointer;
+}
+
+td{
+    cursor: pointer;
+    background-color: cornflowerblue;
+}
+
+.mineswipper{
+    background-color: aquamarine;
+}
+
+.submarine{
+    background-color:aliceblue;
+}
+
+.frigate{
+    background-color: orange;
+}
+
+.battleship{
+    background-color: darkcyan;
+}
+
+.air-crafter{
+    background-color: azure;
+}
