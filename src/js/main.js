@@ -135,7 +135,8 @@ const getTableRows = (isForLocateShips=false, isForEnemy=false) =>{
     ROWS.forEach(rowToCreate =>{
         let row = `<tr><th>${rowToCreate}</th>`
         COLUMNS.forEach((columnToCreate) =>{
-            row += `<td id='${isForEnemy?'enemy-':''}${columnToCreate}-${rowToCreate}' class='coordinate coordinate-to-${isForLocateShips?'locate':'attack'}'>🌊</td>`
+            row += `<td id='${isForEnemy?'enemy-':''}${isForEnemy&&isForLocateShips?'locate-':''}${columnToCreate}-${rowToCreate}' 
+            class='coordinate coordinate-to-${isForLocateShips?'locate':'attack'}-${isForEnemy?'enemy':'player'}'>🌊</td>`
         })
         row = `${row}</tr>`
         rows += row
@@ -145,14 +146,14 @@ const getTableRows = (isForLocateShips=false, isForEnemy=false) =>{
 }
 
 const addListenerToAssignCoordinates= ()=>{   
-    let columnsToModify = document.querySelectorAll('.coordinate-to-locate') 
+    let columnsToModify = document.querySelectorAll('.coordinate-to-locate-player') 
     columnsToModify.forEach(col =>{
         col.addEventListener('click',assignCoordinateToShip)
     })
 }
 
 const addListenerToAttack = ()=>{   
-    let columnsToModify = document.querySelectorAll('.coordinate-to-attack') 
+    let columnsToModify = document.querySelectorAll('.coordinate-to-attack-player') 
     columnsToModify.forEach(col =>{
         col.addEventListener('click',shotAMisile)
     })
@@ -186,7 +187,7 @@ const assignCoordinateToShip = (event)=>{
 
 const shotAMisile = (event)=>{
     let coordinateToSearch = event.target.id
-    let rowsForAttact = document.querySelectorAll('.coordinate-to-attack')
+    let rowsForAttact = document.querySelectorAll('.coordinate-to-attack-player')
     let columnToModify = undefined
 
     rowsForAttact.forEach(col =>{
@@ -202,7 +203,28 @@ const shotAMisile = (event)=>{
         columnToModify.innerText ='💦'
         columnToModify.classList.add('lose')
     }
+
+    generateRandomAttackFromEnemy() 
     
+}
+
+const generateRandomAttackFromEnemy = ()=>{
+    let randomCoordinate = getRandomCoordinate()
+    let randomCoordinateStr = `${randomCoordinate.x}-${randomCoordinate.y}`    
+    let enemyColumnId = `enemy-${randomCoordinateStr}`
+    let columnToModifyTableEnemy = document.getElementById(enemyColumnId)
+    let playerColumnToModify = document.getElementById(randomCoordinateStr)  
+
+    if(isCoordinateIntoPlayerList(randomCoordinateStr)){     
+        columnToModifyTableEnemy.innerText ='🔥'   
+        columnToModifyTableEnemy.classList.add('assert')
+        playerColumnToModify.classList.add('assert')
+    }else{
+        columnToModifyTableEnemy.innerText ='💦'
+        columnToModifyTableEnemy.classList.add('lose')
+        playerColumnToModify.innerText ='💦'
+        playerColumnToModify.classList.add('lose')
+    }
 }
 
 const paintShip = (shipTypeName, coordinate)=>{
@@ -334,7 +356,7 @@ const areValidCoordinatesForEnemy = (shipName, listOfCoordinates)=>{
     let areValid = true
     listOfCoordinates.forEach(coordinateXY =>{
         if(isCoordinateIntoEnemyList(coordinateXY)){   
-            console.error(`You cannot set the coordinate ${coordinateXY} to the shiptype: ${shipName}. Because this coordinate already exists for another ship`)
+            console.warn(`You cannot set the coordinate ${coordinateXY} to the shiptype: ${shipName}. Because this coordinate already exists for another ship`)
             areValid = false         
             return
         }
@@ -354,7 +376,7 @@ const setShipIntoTable = (shipType, coordinate) =>{
 const setShipIntoEnemyTable = (shipType, coordinate) =>{
     let enemyCoordinate = new ShipsCoordinates(shipType.name, coordinate)
     enemyCoordinates.push(enemyCoordinate)
-    coordinate = `enemy-${coordinate}`
+    coordinate = `enemy-locate-${coordinate}`
     let coordinateToPaint  = undefined       
     coordinateToPaint = document.getElementById(coordinate)     
     coordinateToPaint.innerText =  `${shipType.icon}`   
@@ -365,8 +387,7 @@ const isCoordinateIntoPlayerList = (coordinate) =>{
     let isCoordinateSaved = false
     let playerCoordinate = playerCoordinates.find(shipCoordinate => shipCoordinate.coordinate === coordinate)
     if(playerCoordinate){
-        isCoordinateSaved = true
-        
+        isCoordinateSaved = true        
     }else{
         isCoordinateSaved = false        
     }
@@ -434,3 +455,8 @@ const getRandomNumber = (min,max) =>{
 }
 
 window.addEventListener('load',initComponents)
+
+/**
+ * TODO:: Implement damage inform
+ * implement save the attacks to generate diferents coordnates
+ */
