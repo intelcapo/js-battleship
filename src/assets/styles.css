@@ -36,3 +36,17 @@ td{
 .air-crafter{
     background-color: azure;
 }
+
+.assert{
+    background-color:coral;
+}
+
+.lose{
+    background-color: aliceblue;
+}
+
+#container-tables-player{
+    display: grid;
+    grid-template-columns: repeat(3,400px);
+}
+
