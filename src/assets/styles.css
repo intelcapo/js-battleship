@@ -45,8 +45,8 @@ td{
     background-color: aliceblue;
 }
 
-#container-tables-player{
+.container-tables{
     display: grid;
-    grid-template-columns: repeat(3,400px);
+    grid-template-columns: repeat(3,auto);
 }
 

@@ -27,9 +27,18 @@ class ShipsCoordinates {
     }
 }
 
+class RandomCoordinate {
+    constructor(x,y){
+        this.x = x
+        this.y = y
+    }
+}
+
 let tableShipTypes =  null
 let tablePlayer = null
 let tablePlayerForAttack = null
+let tableEnemy = null
+let tableEnemyForAttack = null
 
 const SHIP_TYPES = [
     new ShipType('mineswipper',SMALL_SIZE,'🚤'),
@@ -44,24 +53,49 @@ let playerCoordinates = []
 let enemyCoordinates = []
 
 initComponents = ()=>{
-    let tableShipsContent = null   
-    let tableContentForLocateShips = null
-    let tableContentForAttackShips = null
-    
+    let tableShipsContent = null      
     //Table shipTypes
     tableShipsContent = getTableShipTypes()
     tableShipTypes = document.getElementById('table-ship-types')
     tableShipTypes.innerHTML = tableShipsContent
-    //Table for position ships    
-    tableContentForLocateShips = `${getTableHeaders()}${getTableRows(true)}`    
-    tablePlayer = document.getElementById('table-player')
-    tablePlayer.innerHTML = tableContentForLocateShips 
-    addListenerToAssignCoordinates()
-    //Player's table for attack
-    tableContentForAttackShips = `${getTableHeaders()}${getTableRows()}`    
-    tablePlayerForAttack = document.getElementById('table-player-for-attack')
-    tablePlayerForAttack.innerHTML = tableContentForAttackShips
-    addListenerToAttack()
+
+    paintTablesForPlayer()
+    paintTablesForEnemy()
+   
+}
+
+const paintTablesForPlayer = () =>{
+    let tableContentForLocateShips = null
+    let tableContentForAttackShips = null
+
+     //Table for position ships    
+     tableContentForLocateShips = `${getTableHeaders()}${getTableRows(true)}`    
+     tablePlayer = document.getElementById('table-player')
+     tablePlayer.innerHTML = tableContentForLocateShips 
+     addListenerToAssignCoordinates()
+     //Player's table for attack
+     tableContentForAttackShips = `${getTableHeaders()}${getTableRows()}`    
+     tablePlayerForAttack = document.getElementById('table-player-for-attack')
+     tablePlayerForAttack.innerHTML = tableContentForAttackShips
+     addListenerToAttack()
+
+}
+
+const paintTablesForEnemy = () =>{
+    let tableContentForLocateShips = null
+    let tableContentForAttackShips = null
+
+     //Table for position ships    
+     tableContentForLocateShips = `${getTableHeaders()}${getTableRows(true, true)}`    
+     tableEnemy = document.getElementById('table-enemy')
+     tableEnemy.innerHTML = tableContentForLocateShips 
+    
+     //Player's table for attack
+     tableContentForAttackShips = `${getTableHeaders()}${getTableRows(false, true)}`    
+     tableEnemyForAttack = document.getElementById('table-enemy-for-attack')
+     tableEnemyForAttack.innerHTML = tableContentForAttackShips
+     
+
 }
 
 const getTableShipTypes= ()=>{
@@ -96,12 +130,12 @@ const getTableHeaders = ()=>{
     return headers
 }
 
-const getTableRows = (isForLocateShips=false) =>{
+const getTableRows = (isForLocateShips=false, isForEnemy=false) =>{
     let rows = `<tbody>`
     ROWS.forEach(rowToCreate =>{
         let row = `<tr><th>${rowToCreate}</th>`
         COLUMNS.forEach((columnToCreate) =>{
-            row += `<td id='${columnToCreate}-${rowToCreate}' class='coordinate coordinate-to-${isForLocateShips?'locate':'attack'}'>🌊</td>`
+            row += `<td id='${isForEnemy?'enemy-':''}${columnToCreate}-${rowToCreate}' class='coordinate coordinate-to-${isForLocateShips?'locate':'attack'}'>🌊</td>`
         })
         row = `${row}</tr>`
         rows += row
@@ -161,7 +195,7 @@ const shotAMisile = (event)=>{
         }
     })
 
-    if(isCoordinateIntoPlayerList(coordinateToSearch)){
+    if(isCoordinateIntoEnemyList(coordinateToSearch)){
         columnToModify.innerText ='🔥'
         columnToModify.classList.add('assert')
     }else{
@@ -192,9 +226,21 @@ const setShipIntoCoordinates = (shipTypeName, direction,coordinateX, coordinateY
     }else{
         setShipIntoCoordinatesY(shipType,coordinateX, coordinateY)
     }
+    setEnemyShipIntoCoordinates(shipType)
 }
 
-const setShipIntoCoordinatesX = (shipType, coordinateX, coordinateY) => {
+const setEnemyShipIntoCoordinates = (shipType)=>{
+    let randomCoordinate = getRandomCoordinate()
+    let randomDirection = getRandomDirection()
+
+    if(randomDirection === 'horizontal'){
+        setShipIntoCoordinatesX(shipType,randomCoordinate.x, randomCoordinate.y,true)
+    }else{
+        setShipIntoCoordinatesY(shipType,randomCoordinate.x, randomCoordinate.y,true)
+    }
+}
+
+const getListOfCoordinatesInXAxis = (shipType, coordinateX, coordinateY) =>{
     let coordinates = getInitialAndFinalCoordinate(shipType,'horizontal', coordinateX, coordinateY)
     let initialCoordinate = coordinates[0]
     let finalCoordinate =  coordinates[1]   
@@ -209,16 +255,32 @@ const setShipIntoCoordinatesX = (shipType, coordinateX, coordinateY) => {
         coordinate= `${posX}-${posY}`
         listOfCoordinates.push(coordinate)
     }
+    return listOfCoordinates
+}
 
-    if(areValidCoordinates(shipType.name,listOfCoordinates)){
+const setShipIntoCoordinatesX = (shipType, coordinateX, coordinateY, isForEnemy = false) => {   
+    let listOfCoordinates = []
+    listOfCoordinates = getListOfCoordinatesInXAxis(shipType, coordinateX, coordinateY)
+    if(isForEnemy){
+        while(!areValidCoordinatesForEnemy(shipType.name,listOfCoordinates)){
+            let randomCoordinate = getRandomCoordinate()            
+            listOfCoordinates = getListOfCoordinatesInXAxis(shipType, randomCoordinate.x, randomCoordinate.y)
+        }
+        console.log(listOfCoordinates)
         listOfCoordinates.forEach(coordinateXY =>{
-            setShipIntoTable(shipType, coordinateXY)
-        })
+            setShipIntoEnemyTable(shipType, coordinateXY)
+        })    
+    }else{
+        if(areValidCoordinatesForPlayer(shipType.name,listOfCoordinates)){
+            listOfCoordinates.forEach(coordinateXY =>{
+                setShipIntoTable(shipType, coordinateXY)
+            })
+        }
     }
    
 }
 
-const setShipIntoCoordinatesY = (shipType, coordinateX, coordinateY) => {
+const getListOfCoordiantesInAxisY = (shipType, coordinateX, coordinateY) =>{
     let coordinates = getInitialAndFinalCoordinate(shipType,'vertical', coordinateX, coordinateY)
     let initialCoordinate = coordinates[0]
     let finalCoordinate =  coordinates[1]
@@ -232,19 +294,47 @@ const setShipIntoCoordinatesY = (shipType, coordinateX, coordinateY) => {
         coordinate= `${posX}-${posY}`
         listOfCoordinates.push(coordinate)
     }
+    return listOfCoordinates
+}
 
-    if(areValidCoordinates(shipType.name,listOfCoordinates)){
+const setShipIntoCoordinatesY = (shipType, coordinateX, coordinateY, isForEnemy = false) => {
+    let listOfCoordinates = []
+    listOfCoordinates = getListOfCoordiantesInAxisY(shipType, coordinateX, coordinateY)
+    if(isForEnemy){
+        while(!areValidCoordinatesForEnemy(shipType.name,listOfCoordinates)){
+            let randomCoordinate = getRandomCoordinate()            
+            listOfCoordinates = getListOfCoordiantesInAxisY(shipType, randomCoordinate.x, randomCoordinate.y)
+        }
+        console.log(listOfCoordinates)
         listOfCoordinates.forEach(coordinateXY =>{
-            setShipIntoTable(shipType, coordinateXY)
-        })
+            setShipIntoEnemyTable(shipType, coordinateXY)
+        })     
+    }else{   
+        if(areValidCoordinatesForPlayer(shipType.name,listOfCoordinates)){
+            listOfCoordinates.forEach(coordinateXY =>{
+                setShipIntoTable(shipType, coordinateXY)
+            })        
+        }
     }
 }
 
-const areValidCoordinates = (shipName, listOfCoordinates)=>{
+const areValidCoordinatesForPlayer = (shipName, listOfCoordinates)=>{
     let areValid = true
     listOfCoordinates.forEach(coordinateXY =>{
         if(isCoordinateIntoPlayerList(coordinateXY)){   
             alert(`You cannot set the coordinate ${coordinateXY} to the shiptype: ${shipName}. Because this coordinate already exists for another ship`)
+            areValid = false         
+            return
+        }
+    })
+    return areValid
+}
+
+const areValidCoordinatesForEnemy = (shipName, listOfCoordinates)=>{
+    let areValid = true
+    listOfCoordinates.forEach(coordinateXY =>{
+        if(isCoordinateIntoEnemyList(coordinateXY)){   
+            console.error(`You cannot set the coordinate ${coordinateXY} to the shiptype: ${shipName}. Because this coordinate already exists for another ship`)
             areValid = false         
             return
         }
@@ -261,12 +351,33 @@ const setShipIntoTable = (shipType, coordinate) =>{
     coordinateToPaint.classList.add(shipType.name)    
 }
 
+const setShipIntoEnemyTable = (shipType, coordinate) =>{
+    let enemyCoordinate = new ShipsCoordinates(shipType.name, coordinate)
+    enemyCoordinates.push(enemyCoordinate)
+    coordinate = `enemy-${coordinate}`
+    let coordinateToPaint  = undefined       
+    coordinateToPaint = document.getElementById(coordinate)     
+    coordinateToPaint.innerText =  `${shipType.icon}`   
+    coordinateToPaint.classList.add(shipType.name)    
+}
+
 const isCoordinateIntoPlayerList = (coordinate) =>{
     let isCoordinateSaved = false
     let playerCoordinate = playerCoordinates.find(shipCoordinate => shipCoordinate.coordinate === coordinate)
     if(playerCoordinate){
         isCoordinateSaved = true
         
+    }else{
+        isCoordinateSaved = false        
+    }
+    return isCoordinateSaved
+}
+
+const isCoordinateIntoEnemyList = (coordinate) =>{
+    let isCoordinateSaved = false
+    let enemyCoordinate = enemyCoordinates.find(shipCoordinate => shipCoordinate.coordinate === coordinate)
+    if(enemyCoordinate){
+        isCoordinateSaved = true        
     }else{
         isCoordinateSaved = false        
     }
@@ -303,6 +414,23 @@ const getInitialAndFinalCoordinate = (shipType,direction, coordinateX, coordinat
         }
     }    
     return [initialCoordinate,finalCoordinate]
+}
+
+const getRandomCoordinate = () =>{
+    let rowsRandomIndex = getRandomNumber(0,ROWS.length - 1)
+    let columnsRandomIndex = getRandomNumber(0,ROWS.length - 1)
+    let randomCoordinate = new RandomCoordinate(COLUMNS[columnsRandomIndex], ROWS[rowsRandomIndex])
+    console.log(randomCoordinate)
+    return randomCoordinate
+}
+
+const getRandomDirection = ()=>{
+    let randomNumberDirection = getRandomNumber(0,2)
+    return randomNumberDirection === 1 ? 'horizontal' : 'vertical'
+}
+
+const getRandomNumber = (min,max) =>{
+    return Math.floor( Math.random() * (max - min) + min )
 }
 
 window.addEventListener('load',initComponents)
